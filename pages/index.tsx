@@ -32,7 +32,7 @@ const Index = () => {
         </div>
         <div>
           <div className='p-5 '>
-           <Timer initialMinute={5} initialSeconds={0}/>
+           <Timer initialMinute={0} initialSeconds={0}/>
           </div>
         </div>
 
@@ -45,43 +45,43 @@ export default Home
 
 
 const Timer = (props:any) => {
-  const [finalMinutes,setFinalMinute] = useState(0);
-  const [ minutes, setMinutes ] = useState(0);
-  const [seconds, setSeconds ] =  useState(0);
+  const {initialMinute = 0,initialSeconds = 0} = props;
+  const [final,setFinal]=useState(5);
+  const [ minutes, setMinutes ] = useState(initialMinute);
+  const [seconds, setSeconds ] =  useState(initialSeconds);
+  
+  const reset=()=>{
+    setMinutes(0);
+    setSeconds(0);
+  }
+
   useEffect(()=>{
-  let myInterval = setInterval(() => {
-        if(finalMinutes===minutes){
-           clearInterval(myInterval);
-        }else{
-          if (seconds!==60) {
-            setSeconds(seconds + 1);
-        }
-        if (seconds === 60) {
-            if (minutes === 60) {
-                clearInterval(myInterval)
-            } else {
-                setMinutes(minutes + 1);
-                setSeconds(0);
-            }
-        } 
-        } 
-       
-      
+    let  myInterval:any;
+    if(final!==minutes){
+     myInterval = setInterval(() => {
+          if (seconds !== 59) {
+              setSeconds(seconds + 1);
+          }else{
+            setSeconds(0)
+            setMinutes(minutes + 1);
+          }
+              if (minutes === 59) {
+                  setMinutes(0)
+              } else {
+              }
       }, 100)
+    }
       return ()=> {
           clearInterval(myInterval);
         };
-  },[finalMinutes]);
+  });
 
   return (
-      <div>
-        <div>
-          <button className='' onClick={()=>setFinalMinute(3)}>click <menu></menu></button>
-          <button className='' onClick={()=>setFinalMinute(3)}>reset <menu></menu></button>
-        </div>
+      <div className='absolute inset-0'>
+        <button onClick={()=>reset()}>reset</button>
       { minutes === 0 && seconds === 0
           ? null
-          : <h1> {minutes}:{seconds < 10 ?  `0${seconds}` : seconds}</h1> 
+          : <h1> {minutes}:{seconds < final ?  `0${seconds}` : seconds}</h1> 
       }
       </div>
   )
