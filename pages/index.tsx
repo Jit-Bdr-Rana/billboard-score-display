@@ -11,7 +11,7 @@ const Index = () => {
     <Mainlayout>
       <div className='bg-black text-white min-h-screen flex-col flex justify-center items-center'>
         <div className='flex gap-16'>
-        <div className=''>
+          <div className=''>
             <div className='px-16 border '>
               <p className='text-[10rem] font-bold'>5</p>
             </div>
@@ -31,8 +31,8 @@ const Index = () => {
           </div>
         </div>
         <div>
-          <div className='p-5 '>
-           <Timer initialMinute={0} initialSeconds={0}/>
+          <div className='flex justify-center relative text-5xl px-10 mt-8 font-bold'>
+            <Timer className={'absolute inset-0 text-center right-16'} fMinute={5} fSeconds={0} />
           </div>
         </div>
 
@@ -44,45 +44,45 @@ const Index = () => {
 export default Home
 
 
-const Timer = (props:any) => {
-  const {initialMinute = 0,initialSeconds = 0} = props;
-  const [final,setFinal]=useState(5);
-  const [ minutes, setMinutes ] = useState(initialMinute);
-  const [seconds, setSeconds ] =  useState(initialSeconds);
-  
-  const reset=()=>{
+const Timer = ({ fMinute, fSeconds, stop = false, className }: any) => {
+  // const [finalMinute,setFinalMinute]=useState(5);
+  // const [finalSecond,setFinalSecond]=useState(5);
+  const [minutes, setMinutes] = useState(0);
+  const [seconds, setSeconds] = useState(0);
+
+  const reset = () => {
     setMinutes(0);
     setSeconds(0);
+    stop = true;
   }
 
-  useEffect(()=>{
-    let  myInterval:any;
-    if(final!==minutes){
-     myInterval = setInterval(() => {
-          if (seconds !== 59) {
-              setSeconds(seconds + 1);
-          }else{
-            setSeconds(0)
-            setMinutes(minutes + 1);
-          }
-              if (minutes === 59) {
-                  setMinutes(0)
-              } else {
-              }
-      }, 100)
+  useEffect(() => {
+    let myInterval: any;
+    if (fMinute !== minutes && !stop) {
+      myInterval = setInterval(() => {
+        if (seconds !== 59) {
+          setSeconds(seconds + 1);
+        } else {
+          setSeconds(0)
+          setMinutes(minutes + 1);
+        }
+        if (minutes === 59) {
+          setMinutes(0)
+        } else {
+        }
+      }, 1000)
     }
-      return ()=> {
-          clearInterval(myInterval);
-        };
+    return () => {
+      clearInterval(myInterval);
+    };
   });
 
   return (
-      <div className='absolute inset-0'>
-        <button onClick={()=>reset()}>reset</button>
-      { minutes === 0 && seconds === 0
-          ? null
-          : <h1> {minutes}:{seconds < final ?  `0${seconds}` : seconds}</h1> 
+    <div className={className}>
+      {minutes === 0 && seconds === 0
+        ? null
+        : <h1> {`${minutes < 10 ? '0' + minutes : minutes}`}:{seconds < 10 ? `0${seconds}` : seconds}</h1>
       }
-      </div>
+    </div>
   )
 }

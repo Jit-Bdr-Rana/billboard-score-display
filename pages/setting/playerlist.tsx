@@ -28,6 +28,7 @@ const PlayerList = () => {
   const [list, setList] = useState<TeamInterface[]>([]);
   const [team, setTeam] = useState<TeamInterface>();
   const [field, setField] = useState<React.ReactNode[]>([]);
+  const [selectedTeam, setSelectedTeam] = useState<string>('');
   const onAdd = () => {
     if (!team) {
       alert('team name is requierd')
@@ -68,10 +69,10 @@ const PlayerList = () => {
     <SettingLayout>
       <div className='form border p-3 my-3 py-5'>
         <h1 className='text-center text-xl my-2'>Add Team and player</h1>
-        <div className='grid grid-cols-2 justify-center i items-end'>
+        <div className='grid grid-cols-2 gap-10 justify-center i items-end'>
           <div>
             <h1 className='underline'>Team Name</h1>
-            <input required id='teamName' title='minute' onChange={(e: ChangeEvent<HTMLInputElement>) => setTeam({ name: e.target.value, playerList: [] })} className=' px-3  focus:outline-none mt-1 text-gray-700 py-1 text-md' type="text" />
+            <input required id='teamName' title='minute' onChange={(e: ChangeEvent<HTMLInputElement>) => setTeam({ name: e.target.value, playerList: [] })} className=' px-3  w-full focus:outline-none mt-1 text-gray-700 py-1 text-md' type="text" />
           </div>
 
           <div className='flex gap-3 select-none'>
@@ -83,7 +84,7 @@ const PlayerList = () => {
           <div className='flex col-span-6 justify-between gap-5 items-end'>
             <div>
               <h1 className='underline'>Slelect the Team </h1>
-              <select title='team list' className=' px-3  focus:outline-none mt-1 text-black py-1.5 text-md' id="">
+              <select onChange={(e: ChangeEvent<HTMLSelectElement>) => setSelectedTeam(e.target.value)} title='team list' className=' px-3  focus:outline-none mt-1 text-black py-1.5 text-md' id="">
                 <option value="">slect the team name</option>
                 {
                   list?.length > 0 && list.map((data, index) => {
@@ -105,11 +106,18 @@ const PlayerList = () => {
         </div>
         <div className='w-1/2'>
           <ul className='py-2 '>
-            <li className='relative flex group   cursor-pointer'>
-              <span className='w-[10%]'>1{')'}</span>
-              <span className='w-[80%]'>JIT BDR RANA</span>
-              <span className='absolute right-5 inset-y-0 group-hover:block hidden'>C</span>
-            </li>
+            {
+              list.length > 0 && list?.find(cur => cur.name == selectedTeam)?.playerList?.map((data, index) => {
+                return (
+                  <li className='relative flex group   cursor-pointer'>
+                    <span className='w-[10%]'>{data.playerNumber}{')'}</span>
+                    <span className='w-[80%]'>{data.name}</span>
+                    <span className='absolute right-5 inset-y-0 group-hover:block hidden'>C</span>
+                  </li>
+                )
+              })
+            }
+
 
             {
 
@@ -117,9 +125,10 @@ const PlayerList = () => {
                 return data
               })
             }
-            <li className='text-center  mt-2 select-none w-full'>
-              <button onClick={() => setField((field) => [...field, <AddFiled setField={setField} key={new Date().getTime()} field={[...field]} />])} className='text-lg w-full bg-black px-5'>+</button>
-            </li>
+            {selectedTeam != '' &&
+              <li className='text-center  mt-2 select-none w-full'>
+                <button onClick={() => setField((field) => [...field, <AddFiled selectedTeam={selectedTeam} list={list} setList={setList} setField={setField} key={new Date().getTime()} field={[...field]} />])} className='text-lg w-full bg-black px-5'>+</button>
+              </li>}
           </ul>
         </div>
       </div>
@@ -168,10 +177,19 @@ const TeamList = ({ list, current, setList }: { list: TeamInterface[], current: 
       {open &&
         <div>
           <ul className='p-2'>
-            <li className='flex group justify-between cursor-pointer'>
-              <span>{current?.name}</span>
-              <span className='group-hover:block hidden'>C</span>
-            </li>
+            {
+              current?.playerList?.map((data, index) => {
+                return (
+                  <React.Fragment>
+                    <li className='relative flex group   cursor-pointer'>
+                      <span className='w-[10%]'>{data.playerNumber}</span>
+                      <span className='w-[80%]'>{data.name}</span>
+                      <span className='absolute right-5 inset-y-0 group-hover:block hidden'>C</span>
+                    </li>
+                  </React.Fragment>
+                )
+              })
+            }
           </ul>
         </div>
       }
@@ -180,16 +198,51 @@ const TeamList = ({ list, current, setList }: { list: TeamInterface[], current: 
 }
 
 
-const AddFiled = ({ field, key, setField }: { field: React.ReactNode[], key: number, setField: Dispatch<SetStateAction<React.ReactNode[]>> }) => {
+const AddFiled = ({ field, key, setField, list, setList, selectedTeam }: { field: React.ReactNode[], key: number, setField: Dispatch<SetStateAction<React.ReactNode[]>>, setList: Dispatch<SetStateAction<TeamInterface[]>>, list: TeamInterface[], selectedTeam?: string }) => {
+  const [playerName, setPlayerName] = useState<string>('')
+  const [playerNumber, setPlayerNumber] = useState<number>(0);
   const remove = () => {
     return setField(field.filter((cur: any) => cur['key'] != key))
   }
+  const savePlayer = () => {
+    console.log(selectedTeam)
+    if (selectedTeam) {
+      console.log('hello')
+      const t = list.find((cur) => cur.name == selectedTeam)
+      if (t) {
+        const team: TeamInterface = {
+          name: t.name,
+          playerList: [
+            ...t.playerList,
+            {
+              name: playerName,
+              captain: false,
+              playerNumber: playerNumber
+            }
+          ]
+        };
+        setList(list.map((data, index) => {
+          if (data.name == selectedTeam) {
+            return team;
+          }
+          return data;
+        }))
+        saveList(list.map((data, index) => {
+          if (data.name == selectedTeam) {
+            return team;
+          }
+          return data;
+        }));
+        remove();
+      }
+    }
+  }
   return (
     <li className='flex gap-2 w-full mt-1'>
-      <input title='k' type="text" className="w-[6%] text-gray-600 focus:outline-none pl-1 py-1" />
-      <input title='d' type="text" className="w-[84%] focus:outline-none text-gray-600 pl-2 py-1" />
+      <input title='k' type="number" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPlayerNumber(parseInt(e.target.value))} className="w-[6%] text-gray-600 focus:outline-none pl-1 py-1" />
+      <input title='d' type="text" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPlayerName(e.target.value)} className="w-[84%] focus:outline-none text-gray-600 pl-2 py-1" />
       <button className='bg-white hover:bg-slate-300 text-black py-1 text-sm px-3' onClick={() => remove()}>Remove</button>
-      <button className='bg-white hover:bg-slate-300 text-black py-1 text-sm px-3'>Add</button>
+      <button className='bg-white hover:bg-slate-300 text-black py-1 text-sm px-3' onClick={() => savePlayer()}>Add</button>
     </li>
   )
 }
