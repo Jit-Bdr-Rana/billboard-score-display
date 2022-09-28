@@ -1,5 +1,5 @@
 import React, { ChangeEvent, Dispatch, SetStateAction, useEffect, useState } from 'react'
-import { useMemo } from 'react';
+import { TeamInterface } from '../../interface/global.interface'
 import SettingLayout from '../../layouts/SettingLayout'
 
 const playerlist = () => {
@@ -8,14 +8,7 @@ const playerlist = () => {
   )
 }
 
-interface TeamInterface {
-  name: string;
-  playerList: {
-    name: string,
-    captain: boolean,
-    playerNumber: number
-  }[]
-}
+
 const saveList = (list?: TeamInterface[], current?: TeamInterface) => {
   if (list && current) {
     localStorage.setItem('teamList', JSON.stringify([...list, current]));
