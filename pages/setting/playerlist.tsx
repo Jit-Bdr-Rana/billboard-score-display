@@ -102,7 +102,7 @@ const PlayerList = () => {
             {
               list.length > 0 && list?.find(cur => cur.name == selectedTeam)?.playerList?.map((data, index) => {
                 return (
-                  <li className='relative flex group   cursor-pointer'>
+                  <li key={index} className='relative flex group   cursor-pointer'>
                     <span className='w-[10%]'>{data.playerNumber}{')'}</span>
                     <span className='w-[80%]'>{data.name}</span>
                     <span className='absolute right-5 inset-y-0 group-hover:block hidden'>C</span>
@@ -173,7 +173,7 @@ const TeamList = ({ list, current, setList }: { list: TeamInterface[], current: 
             {
               current?.playerList?.map((data, index) => {
                 return (
-                  <React.Fragment>
+                  <React.Fragment key={index}>
                     <li className='relative flex group   cursor-pointer'>
                       <span className='w-[10%]'>{data.playerNumber}</span>
                       <span className='w-[80%]'>{data.name}</span>

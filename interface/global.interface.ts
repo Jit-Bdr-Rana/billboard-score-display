@@ -21,3 +21,7 @@ export interface MatchTime {
   status?: boolean;
   restart?: boolean;
 }
+export type AdditionalTime = Omit<
+  MatchTime,
+  "initialMin" | "initialSec" | "restart"
+>;

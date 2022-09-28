@@ -1,30 +1,28 @@
 import React, { ChangeEvent, useEffect, useState } from 'react'
-import { MatchTime, ScoreInterface, TeamInterface } from '../../interface/global.interface'
+import { AdditionalTime, MatchTime, ScoreInterface, TeamInterface } from '../../interface/global.interface'
 import SettingLayout from '../../layouts/SettingLayout'
-import { removeTime, saveTeamAndScore, saveTime } from '../../service/gloabl.service'
+import { getAdditinalTime, getTime, removeAdditionlTime, removeTime, saveAdditionlTime, saveTeamAndScore, saveTime } from '../../service/gloabl.service'
+import { clearInputValue } from '../../utils/utils.interface'
 const index = () => {
   return (
     <Setting />
   )
 }
-
 export default index
-
-
-type AdditionalTime = Omit<MatchTime, "initialMin" | "initialSec">
 
 const Setting = () => {
   const [list, setList] = useState<TeamInterface[]>([]);
   const [team, setTeam] = useState<ScoreInterface>({ teamA: 'null', teamB: 'null', goalA: 0, goalB: 0 });
-  const [time, setTime] = useState<MatchTime>({ initialMin: 0, initialSec: 0, finalMin: 45, finalSec: 0, restart: false, status: true });
+  const [time, setTime] = useState<MatchTime>({ initialMin: 0, initialSec: 0, finalMin: 45, finalSec: 0, restart: false, status: false });
+  const [addiTime, setAddiTime] = useState<AdditionalTime>({ finalMin: 0, finalSec: 0, status: false });
 
   const start = () => {
-
     if (team.teamA == 'null' || team.teamB == '') {
       alert("select the vs team first")
       return;
     }
-    if (time.finalMin < time.initialMin || time.finalSec < time.initialSec) {
+    if (time.finalMin < time.initialMin) {
+      console.log(time)
       alert("final time should be greater than start time")
       return;
     }
@@ -33,15 +31,31 @@ const Setting = () => {
     saveTime({ ...time, initialMin: time.initialMin || 0, initialSec: time.initialSec || 0, finalMin: time.finalMin || 45, finalSec: time.finalSec || 0, status: true })
     alert('time started')
   }
+  const startAdditionalTime = () => {
+    if (addiTime.finalMin !== 0) {
+      setAddiTime((p) => { return { ...p, status: true } })
+      saveAdditionlTime(addiTime)
+    } else {
+      alert("please enter the additional time")
+    }
+  }
+  const resetAdditionalTime = () => {
+    setAddiTime({ finalMin: 0, finalSec: 0, status: false })
+    removeAdditionlTime();
+    clearInputValue('addiFinalMin', '0')
+    clearInputValue('addiFinalSec', '0')
+  }
   const pause = () => {
     setTime({ ...time, status: false })
     saveTime({ ...time, status: false })
     alert('time paused')
   }
   const reset = () => {
-    setTime({ initialMin: 0, initialSec: 0, finalMin: 0, finalSec: 0, restart: false, status: false });
-    // const const: HTMLInputElement = document.getElementById('teamName') as HTMLInputElement;
-    // teamName.value = ""
+    setTime({ initialMin: 0, initialSec: 0, finalMin: 45, finalSec: 0, restart: false, status: false });
+    clearInputValue('finalMin', '45')
+    clearInputValue('finalSec', '0')
+    clearInputValue('startMin', '0')
+    clearInputValue('startSec', '0')
     removeTime();
   }
   const restart = () => {
@@ -54,9 +68,13 @@ const Setting = () => {
     if (lists) {
       setList(JSON.parse(lists));
     }
-    const times = localStorage.getItem('matchTime')
+    const times = getTime();
     if (times) {
-      setTime(JSON.parse(times))
+      setTime(times)
+    }
+    const addiTimes = getAdditinalTime();
+    if (addiTimes) {
+      setAddiTime(addiTimes)
     }
     const teams = localStorage.getItem('vsTeam')
     if (teams) {
@@ -77,7 +95,7 @@ const Setting = () => {
                 {
                   list?.length > 0 && list?.map((data, index) => {
                     return (
-                      <option selected={data.name === team.teamA} value={data.name}>{data.name}</option>
+                      <option key={index} selected={data.name === team.teamA} value={data.name}>{data.name}</option>
                     )
                   })
                 }
@@ -146,16 +164,22 @@ const Setting = () => {
         <h1 className='text-center text-xl my-2'>Additionl Minute</h1>
         <div className='grid grid-cols-3 items-end'>
           <div>
-            <h1 className='underline'>Set Minute</h1>
-            <input title='minute' className='w-1/2 px-3 focus:outline-none mt-1 text-black py-1 text-md' type="number" />
+            <h1 className='underline'>Minute</h1>
+            <input id='addiFinalMin' onChange={(e: ChangeEvent<HTMLInputElement>) => setAddiTime((p) => { return { ...p!, finalMin: parseInt(e.target.value) } })} defaultValue={addiTime?.finalMin} title='minute' className='w-1/2 px-3 focus:outline-none mt-1 text-black py-1 text-md' type="number" />
           </div>
           <div>
-            <h1 className='underline'>Set Second</h1>
-            <input title='second' className='w-1/2 px-3 focus:outline-none mt-1 text-black py-1 text-md' type="number" />
+            <h1 className='underline'>Second</h1>
+            <input id="addiFinalSec" onChange={(e: ChangeEvent<HTMLInputElement>) => setAddiTime((p) => { return { ...p!, finalMin: parseInt(e.target.value) } })} defaultValue={addiTime?.finalSec} title='second' className='w-1/2 px-3 focus:outline-none mt-1 text-black py-1 text-md' type="number" />
           </div>
           <div className='flex gap-3 select-none'>
-            <button className='bg-white hover:bg-slate-300 text-black py-1 px-5'>Reset</button>
-            <button className='bg-white hover:bg-slate-300 text-black py-1 px-5'>Start</button>
+            {
+              !addiTime?.status ?
+                <button type='button' title='start' onClick={() => startAdditionalTime()} className='bg-green-700 rounded-sm text-white hover:bg-green-900 py-1 px-5'>Start</button>
+                :
+                <React.Fragment>
+                  <button type='button' title="reset" onClick={() => resetAdditionalTime()} className='bg-blue-700 rounded-sm text-white hover:bg-blue-900  py-1 px-5'>Reset</button>
+                </React.Fragment>
+            }
           </div>
         </div>
       </div>
