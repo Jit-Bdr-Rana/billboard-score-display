@@ -1,5 +1,5 @@
 import type { NextPage } from 'next'
-import { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { AdditionalTime, MatchTime, ScoreInterface, TeamInterface } from '../interface/global.interface'
 import Mainlayout from '../layouts/Mainlayout'
 import { getAdditinalTime } from '../service/gloabl.service'
@@ -14,7 +14,7 @@ const Index = () => {
   const [team, setTeam] = useState<ScoreInterface>({ teamA: 'null', teamB: 'null', goalA: 0, goalB: 0 });
   const [time, setTime] = useState<MatchTime>({ initialMin: 0, initialSec: 0, finalMin: 45, finalSec: 0 });
   const [addiTime, setAddiTime] = useState<AdditionalTime>();
-  const onStorageUpdate = (e: any) => {
+  const onStorageUpdate = useCallback((e: any) => {
     const { key, newValue } = e;
     if (key === "matchTime") {
       setTime(JSON.parse(newValue));
@@ -26,12 +26,7 @@ const Index = () => {
       setAddiTime(JSON.parse(newValue))
       console.log('aaddi time', newValue)
     }
-  };
-
-  const handleChange = (e: any) => {
-    setName(e.target.value);
-    localStorage.setItem("name", e.target.value);
-  };
+  }, []);
 
   useEffect(() => {
     setName(localStorage.getItem("name") || "");
@@ -58,39 +53,55 @@ const Index = () => {
     return () => {
       window.removeEventListener("storage", onStorageUpdate);
     };
+
   }, []);
   return (
     <Mainlayout>
       <div className='bg-black text-white min-h-screen flex-col flex justify-center items-center'>
-        <div className='flex gap-16'>
-          <div className=''>
-            <div className={`${team?.goalA >= 10 ? 'px-6' : 'px-16'}  border `}>
-              <p className='text-[10rem] font-bold'>{team?.goalA || 0}</p>
+        <div>
+          <h1 className='text-3xl font-bold'>Tournament name</h1>
+        </div>
+        <div className='flex w-full gap-20 justify-center mt-10 items-start'>
+          <div className=' w-[46%] grid grid-cols-1 '>
+            <div className='justify-self-end'>
+              <div className={`${team?.goalA >= 10 ? 'px-12' : 'px-28'}  border `}>
+                <p className='text-[13rem] font-bold'>{team?.goalA || 0}</p>
+              </div>
+            </div>
+            <div className='w-full flex justify-end  mt-6'>
+              <div>
+                <p className='text-3xl'>{team?.teamA || 'Select Team A '}</p>
+              </div>
             </div>
           </div>
-          <div className=''>
-            <div className={`${team?.goalB >= 10 ? 'px-6' : 'px-16'}  border `}>
-              <p className='text-[10rem] font-bold'>{team?.goalB || 0}</p>
+
+          <div className='w-auto  self-end justify-self-center'>
+            <p className='text-3xl font-bold'>VS</p>
+          </div>
+
+          <div className='w-[46%] items-center grid grid-cols-1 '>
+            <div className='justify-self-start'>
+              <div className={`${team?.goalB >= 10 ? 'px-12' : 'px-28'}  border `}>
+                <p className='text-[13rem] font-bold'>{team?.goalB || 0}</p>
+              </div>
+            </div>
+            <div className='flex justify-start w-full mt-6'>
+              <div>
+                <p className='text-3xl'>{team?.teamB || 'Select Team B'}</p>
+              </div>
             </div>
           </div>
         </div>
-        <div className='grid grid-cols-2 mt-5 gap-16'>
-          <div className='justify-self-end'>
-            <p className='text-3xl'>{team?.teamA || 'Select Team A '}</p>
-          </div>
-          <div className='justify-self-start'>
-            <p className='text-3xl'>{team?.teamB || 'Select Team B'}</p>
-          </div>
-        </div>
+
         <div className='flex justify-center'>
-          <div className=' relative text-7xl px-14  mt-8 font-bold'>
+          <div className=' relative text-7xl px-20  mt-5 font-bold'>
             <Timer className={'absolute inset-0 text-center right-16'} iMinute={time?.initialMin} iSecond={time?.initialSec} status={time?.status || false} restart={time?.restart || false} fMinute={time?.finalMin || 0} fSeconds={time?.finalSec || 0} />
           </div>
         </div>
         {addiTime &&
           <div className='flex justify-center'>
-            <div className='relative text-4xl px-8  mt-24 font-bold'>
-              <Timer type="add" className={'absolute inset-0 text-red-500 text-center'} status={true} restart={time?.restart || false} iMinute={0} iSecond={0} fMinute={addiTime?.finalMin || 0} fSeconds={addiTime?.finalSec || 0} />
+            <div className='relative text-4xl px-12  mt-20 font-bold'>
+              {/* <Timer type="add" className={'absolute inset-0 text-red-500 text-center'} status={true} restart={time?.restart || false} iMinute={0} iSecond={0} fMinute={addiTime?.finalMin || 0} fSeconds={addiTime?.finalSec || 0} /> */}
             </div>
           </div>}
 
@@ -102,11 +113,11 @@ const Index = () => {
 export default Home
 
 
-const Timer = ({ iMinute, iSecond, fMinute, fSeconds, restart = false, status, className, type }: any) => {
+
+const Timer = React.memo(function ({ iMinute, iSecond, fMinute, fSeconds, restart = false, status, className, type }: any) {
   const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
-  console.log(iMinute)
-  console.log(iSecond)
+  console.log('child rerender');
   const reset = () => {
     setMinutes(0);
     setSeconds(0);
@@ -122,6 +133,8 @@ const Timer = ({ iMinute, iSecond, fMinute, fSeconds, restart = false, status, c
     reset();
     setInitialTime();
   }, [restart, status])
+
+
   useEffect(() => {
     let myInterval: any;
     if (status) {
@@ -129,10 +142,10 @@ const Timer = ({ iMinute, iSecond, fMinute, fSeconds, restart = false, status, c
         console.log('set')
         myInterval = setInterval(() => {
           if (seconds < 59) {
-            setSeconds(seconds + 1);
+            setSeconds((s) => s + 1);
           } else {
             setSeconds(0)
-            setMinutes(minutes + 1);
+            setMinutes((m) => m + 1);
           }
           if (minutes > 59) {
             setMinutes(0)
@@ -149,6 +162,7 @@ const Timer = ({ iMinute, iSecond, fMinute, fSeconds, restart = false, status, c
       clearInterval(myInterval);
     };
   });
+  Timer.displayName = 'Timer';
 
   return (
     <div className={className}>
@@ -159,4 +173,4 @@ const Timer = ({ iMinute, iSecond, fMinute, fSeconds, restart = false, status, c
       }
     </div>
   )
-}
+})
