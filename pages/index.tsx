@@ -144,14 +144,14 @@ const Timer = React.memo(function ({ iMinute, iSecond, fMinute, fSeconds, restar
           if (seconds < 59) {
             setSeconds((s) => s + 1);
           } else {
-            setSeconds(0)
+            setSeconds((s) => 0)
             setMinutes((m) => m + 1);
           }
           if (minutes > 59) {
-            setMinutes(0)
+            setMinutes((m) => 0)
           } else {
           }
-        }, 1000)
+        }, 1000 - 12)
       } else {
         if (fSeconds !== seconds) {
           setSeconds((s: number) => s + 1)
