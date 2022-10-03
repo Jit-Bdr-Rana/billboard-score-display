@@ -1,5 +1,5 @@
 import React, { ChangeEvent, Dispatch, SetStateAction, useEffect, useState } from 'react'
-import { TeamInterface } from '../../interface/global.interface'
+import { Player, TeamInterface } from '../../interface/global.interface'
 import SettingLayout from '../../layouts/SettingLayout'
 
 const playerlist = () => {
@@ -51,7 +51,54 @@ const PlayerList = () => {
     }
   }
 
-
+  const deletePlayerName = (player: Player, teamName: string) => {
+    const teamList: TeamInterface[] = list?.map((data: TeamInterface, index: number) => {
+      if (data.name == teamName) {
+        if (data.playerList.length > 0) {
+          return {
+            ...data, playerList: data.playerList.filter((list, index) => {
+              return list != player
+            })
+          }
+        } else {
+          return data;
+        }
+      } else {
+        return data;
+      }
+    })
+    setList(teamList)
+    saveList(teamList)
+  }
+  const changePlayerStatus = (tname: string, playername: string, captain?: boolean, goalkepper?: boolean, extra?: boolean) => {
+    const teamList: TeamInterface[] = list?.map((data: TeamInterface, index: number) => {
+      if (data.name == tname) {
+        if (data.playerList.length > 0) {
+          return {
+            ...data, playerList: data.playerList.map((list, index) => {
+              if (list.name == playername) {
+                return {
+                  ...list,
+                  captain: captain,
+                  goalkepper: goalkepper,
+                  extra: extra
+                }
+              } else {
+                return list;
+              }
+            })
+          }
+        } else {
+          return data;
+        }
+      } else {
+        return data;
+      }
+    })
+    setList(teamList)
+    saveList(teamList)
+    console.log(teamList)
+  }
   useEffect(() => {
     const listFromStorage = JSON.parse(localStorage.getItem('teamList') as string)
     if (listFromStorage) {
@@ -88,9 +135,7 @@ const PlayerList = () => {
                 }
               </select>
             </div>
-            <div className='gap-3 select-none'>
-              <button className='bg-white hover:bg-slate-300 text-black py-1 text-base px-5'>Select</button>
-            </div>
+
           </div>
 
           <div className='col-span-6'>
@@ -102,10 +147,15 @@ const PlayerList = () => {
             {
               list.length > 0 && list?.find(cur => cur.name == selectedTeam)?.playerList?.map((data, index) => {
                 return (
-                  <li key={index} className='relative flex group   cursor-pointer'>
+                  <li key={index} className='relative flex group p-0.5  cursor-pointer'>
                     <span className='w-[10%]'>{data.playerNumber}{')'}</span>
                     <span className='w-[80%]'>{data.name}</span>
-                    <span className='absolute right-5 inset-y-0 group-hover:block hidden'>C</span>
+                    <span className='absolute right-5 inset-y-0 '>
+                      <span onClick={() => changePlayerStatus(selectedTeam, data.name, !data.captain, data.goalkepper, data.extra)} className={`mr-3 border rounded-full ${data.captain ? 'text-white border-white' : 'text-black border-black'} px-2 hover:text-white hover:border-white`}>C</span>
+                      <span onClick={() => changePlayerStatus(selectedTeam, data.name, data.captain, !data.goalkepper, data.extra)} className={`mr-3 border rounded-full ${data.goalkepper ? 'text-white border-white' : 'text-black border-black'} px-2 hover:text-white hover:border-white `}>GK</span>
+                      <span onClick={() => changePlayerStatus(selectedTeam, data.name, data.captain, data.goalkepper, !data.extra)} className={`mr-3 border rounded-full ${data.extra ? 'text-white border-white' : 'text-black border-black'} px-2 hover:text-white hover:border-white `}>EX</span>
+                      <span onClick={() => deletePlayerName(data, selectedTeam)} className={`border rounded-full text-red-500 border-red-500 px-2 hover:text-red-600 hover:border-red-600 `}>X</span>
+                    </span>
                   </li>
                 )
               })
@@ -174,10 +224,14 @@ const TeamList = ({ list, current, setList }: { list: TeamInterface[], current: 
               current?.playerList?.map((data, index) => {
                 return (
                   <React.Fragment key={index}>
-                    <li className='relative flex group   cursor-pointer'>
+                    <li className='relative flex group p-0.5  cursor-pointer'>
                       <span className='w-[10%]'>{data.playerNumber}</span>
                       <span className='w-[80%]'>{data.name}</span>
-                      <span className='absolute right-5 inset-y-0 group-hover:block hidden'>C</span>
+                      <span className='absolute right-5 inset-y-0 '>
+                        <span className={`mr-3 border rounded-full ${data.captain ? 'text-white border-white' : 'hidden'} px-2 `}>C</span>
+                        <span className={`mr-3 border rounded-full ${data.goalkepper ? 'text-white border-white' : 'hidden'} px-2  `}>GK</span>
+                        <span className={`border rounded-full ${data.extra ? 'text-white border-white' : 'hidden'} px-2  `}>EX</span>
+                      </span>
                     </li>
                   </React.Fragment>
                 )

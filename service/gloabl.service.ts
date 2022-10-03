@@ -2,6 +2,8 @@ import {
   AdditionalTime,
   MatchTime,
   ScoreInterface,
+  ScreenType,
+  TeamInterface,
 } from "../interface/global.interface";
 
 const saveTeamAndScore = (team: ScoreInterface) => {
@@ -33,6 +35,19 @@ const removeTeamAndScore = () => {
 const removeAdditionlTime = () => {
   localStorage.removeItem("additionalMatchTime");
 };
+
+const SaveScreen = (screen: ScreenType) => {
+  localStorage.setItem("screen", screen);
+};
+const getScreen = (): ScreenType => {
+  return localStorage.getItem("screen") as ScreenType;
+};
+
+const getTeamList = () => {
+  return JSON.parse(
+    localStorage.getItem("teamList") as string
+  ) as TeamInterface[];
+};
 export {
   saveTeamAndScore,
   saveTime,
@@ -42,4 +57,7 @@ export {
   saveAdditionlTime,
   removeAdditionlTime,
   getAdditinalTime,
+  SaveScreen,
+  getScreen,
+  getTeamList,
 };

@@ -10,7 +10,7 @@ const goal = () => {
 }
 
 const Goal = () => {
-    const [team, setTeam] = useState<ScoreInterface>({ teamA: 'null', teamB: 'null', goalA: 0, goalB: 0 });
+    const [team, setTeam] = useState<ScoreInterface>({ teamA: 'null', teamB: 'null', goalA: 0, goalB: 0, tournamentName: '' });
 
     useEffect(() => {
         const teams = localStorage.getItem('vsTeam')
@@ -35,8 +35,11 @@ const Goal = () => {
                         <div>
                             <h1 className='underline'>Team A</h1>
                             <select title='teamA' className='w-full px-3 focus:outline-none mt-2 text-black py-1 text-md' name="" id="">
-                                {team.teamA &&
-                                    <option value={team?.teamA}>{team?.teamA}</option>
+                                {
+                                    team?.teamA === 'null' ?
+                                        <option value="null">Team not selected</option>
+                                        :
+                                        <option value={team?.teamA}>{team?.teamA}</option>
                                 }
                             </select>
                         </div>
@@ -55,8 +58,11 @@ const Goal = () => {
                         <div>
                             <h1 className='underline'>Team B</h1>
                             <select title='teamB' className='w-full px-3 focus:outline-none mt-2 text-black py-1 text-md' name="" id="">
-                                {team.teamB &&
-                                    <option value={team?.teamB}>{team?.teamB}</option>
+                                {
+                                    team?.teamB === 'null' ?
+                                        <option value="null">Team not selected</option>
+                                        :
+                                        <option value={team?.teamB}>{team?.teamB}</option>
                                 }
                             </select>
                         </div>

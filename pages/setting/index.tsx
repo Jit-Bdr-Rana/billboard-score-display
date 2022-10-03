@@ -12,10 +12,13 @@ export default index
 
 const Setting = () => {
   const [list, setList] = useState<TeamInterface[]>([]);
-  const [team, setTeam] = useState<ScoreInterface>({ teamA: 'null', teamB: 'null', goalA: 0, goalB: 0 });
+  const [team, setTeam] = useState<ScoreInterface>({ teamA: 'null', teamB: 'null', goalA: 0, goalB: 0, tournamentName: '' });
   const [time, setTime] = useState<MatchTime>({ initialMin: 0, initialSec: 0, finalMin: 45, finalSec: 0, restart: false, status: false });
   const [addiTime, setAddiTime] = useState<AdditionalTime>({ finalMin: 0, finalSec: 0, status: false });
 
+  const saveTeam = () => {
+    saveTeamAndScore(team);
+  }
   const start = () => {
     if (team.teamA == 'null' || team.teamB == '') {
       alert("select the vs team first")
@@ -26,7 +29,7 @@ const Setting = () => {
       alert("final time should be greater than start time")
       return;
     }
-    saveTeamAndScore(team);
+
     setTime({ ...time, status: true })
     saveTime({ ...time, initialMin: time.initialMin || 0, initialSec: time.initialSec || 0, finalMin: time.finalMin || 45, finalSec: time.finalSec || 0, status: true })
     alert('time started')
@@ -34,7 +37,7 @@ const Setting = () => {
   const startAdditionalTime = () => {
     if (addiTime.finalMin !== 0) {
       setAddiTime((p) => { return { ...p, status: true } })
-      saveAdditionlTime(addiTime)
+      saveAdditionlTime({ ...addiTime, status: true })
     } else {
       alert("please enter the additional time")
     }
@@ -45,10 +48,15 @@ const Setting = () => {
     clearInputValue('addiFinalMin', '0')
     clearInputValue('addiFinalSec', '0')
   }
-  const pause = () => {
-    setTime({ ...time, status: false })
-    saveTime({ ...time, status: false })
-    alert('time paused')
+
+  const resetTournamemtName = (type: string) => {
+    if (type === 'name') {
+      setTeam(t => { return { ...t, tournamentName: '' } })
+      saveTeamAndScore({ ...team, tournamentName: '' })
+    } else {
+      setTeam(t => { return { ...t, teamA: 'null', teamB: 'null' } });
+      saveTeamAndScore({ ...team, teamA: 'null', teamB: 'null' });
+    }
   }
   const reset = () => {
     setTime({ initialMin: 0, initialSec: 0, finalMin: 45, finalSec: 0, restart: false, status: false });
@@ -85,12 +93,29 @@ const Setting = () => {
   return (
     <SettingLayout>
       <div className='form border py-6 p-3'>
-        <h1 className='text-center text-xl mb-2'>Choose the versus team</h1>
-        <div className='flex gap-6 justify-around items-end select-none px-5'>
+        <h1 className='text-center text-xl font-bold mb-2'>Tournament Name</h1>
+        <div className='flex gap-6 justify-around items-end select-none '>
+          <div className='w-full grid grid-cols-12 items-end gap-6'>
+            <div className='col-span-6'>
+              <h1 className='underline'>Name</h1>
+              <input placeholder='enter the tournament name' defaultValue={team?.tournamentName} onChange={(e: ChangeEvent<HTMLInputElement>) => setTeam((prev) => { return { ...prev, tournamentName: e.target.value } })} title='minute' className='w-full px-3 focus:outline-none mt-1 text-black py-1 text-md' type="text" />
+            </div>
+            <div className='flex gap-2'>
+              <button type='button' title='start' onClick={() => saveTeam()} className='bg-green-700 rounded-sm text-white hover:bg-green-900 py-1 px-5'>Save</button>
+              <button type='button' title='start' onClick={() => resetTournamemtName('name')} className='bg-blue-700 rounded-sm text-white hover:bg-blue-900 py-1 px-5'>Reset</button>
+            </div>
+          </div>
+
+
+        </div>
+      </div>
+      <div className='form border py-6 p-3'>
+        <h1 className='text-center text-xl mb-2 font-bold'>Choose the versus team</h1>
+        <div className='flex gap-6 justify-around items-end select-none '>
           <div className='w-full'>
             <div>
               <h1 className='underline'>Team A</h1>
-              <select defaultValue={team.teamA} onChange={(e: ChangeEvent<HTMLSelectElement>) => setTeam((prev) => { return { goalA: prev?.goalA!, goalB: prev?.goalB!, teamA: e.target.value, teamB: prev?.teamB! } })} title='teamA' className='w-full px-3 focus:outline-none mt-2 text-black py-1 text-md' name="" id="">
+              <select defaultValue={team.teamA} onChange={(e: ChangeEvent<HTMLSelectElement>) => setTeam((prev) => { return { ...prev, teamA: e.target.value } })} title='teamA' className='w-full px-3 focus:outline-none mt-2 text-black py-1 text-md' name="" id="">
                 <option value="null">Select Team</option>
                 {
                   list?.length > 0 && list?.map((data, index) => {
@@ -109,7 +134,7 @@ const Setting = () => {
           <div className='w-full'>
             <div>
               <h1 className='underline'>Team B</h1>
-              <select defaultValue={team.teamB} onChange={(e: ChangeEvent<HTMLSelectElement>) => setTeam((prev) => { return { goalA: prev?.goalA!, goalB: prev?.goalB!, teamA: prev?.teamA!, teamB: e.target.value } })} title='teamB' className='w-full px-3 focus:outline-none mt-2 text-black py-1 text-md' name="" id="">
+              <select defaultValue={team.teamB} onChange={(e: ChangeEvent<HTMLSelectElement>) => setTeam((prev) => { return { ...prev, teamB: e.target.value } })} title='teamB' className='w-full px-3 focus:outline-none mt-2 text-black py-1 text-md' name="" id="">
                 <option value={'null'}>Select Team</option>
                 {
                   list?.length > 0 && list?.map((data, index) => {
@@ -120,13 +145,15 @@ const Setting = () => {
                 }
               </select>
             </div>
-
           </div>
-
+        </div>
+        <div className='text-center flex gap-2 justify-center mt-6'>
+          <button type='button' title='start' onClick={() => saveTeam()} className='bg-green-700 rounded-sm text-white hover:bg-green-900 py-1 px-5'>Save</button>
+          <button type='button' title='reset' onClick={() => resetTournamemtName('team')} className='bg-blue-700 rounded-sm text-white hover:bg-blue-900 py-1 px-5'>Reset</button>
         </div>
       </div>
       <div className='form border p-3'>
-        <h1 className='text-center text-xl my-2'>Match time</h1>
+        <h1 className='text-center text-xl my-2 font-bold'>Match time</h1>
         <div className='grid grid-cols-12 gap-y-6 items-end'>
           <div className='col-span-3'>
             <h1 className='underline'>Final Minute</h1>
@@ -161,7 +188,7 @@ const Setting = () => {
         </div>
       </div>
       <div className='form border p-3 '>
-        <h1 className='text-center text-xl my-2'>Additionl Minute</h1>
+        <h1 className='text-center text-xl my-2 font-bold'>Additionl Minute</h1>
         <div className='grid grid-cols-3 items-end'>
           <div>
             <h1 className='underline'>Minute</h1>
