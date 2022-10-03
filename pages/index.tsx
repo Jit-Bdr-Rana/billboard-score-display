@@ -151,7 +151,7 @@ const Timer = React.memo(function ({ iMinute, iSecond, fMinute, fSeconds, restar
             setMinutes((m) => 0)
           } else {
           }
-        }, 1000 - 12)
+        }, 1000 - 15)
       } else {
         if (fSeconds !== seconds) {
           setSeconds((s: number) => s + 1)
